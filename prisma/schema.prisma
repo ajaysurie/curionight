@@ -1,0 +1,56 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Story {
+  id              String   @id @default(cuid())
+  childId         String?  // Optional for MVP without auth
+  childAge        Int      @default(6)
+  childName       String?
+  photoUrl        String?  // Local path or blob URL
+  detectedObjects Json?    // Array of detected objects
+  concept         Json?    // Selected science concept
+  topicPreview    Json?    // Preview info shown before generation
+  pages           Json     // Array of 6 story pages
+  audioUrls       Json?    // Array of audio file URLs
+  modelUsed       String?  // Track which AI model was used
+  generationTime  Int?     // Time in ms to generate
+  shareToken      String?  @unique // For sharing without auth
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([shareToken])
+  @@index([createdAt])
+}
+
+// Future models for when auth is added
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  name      String?
+  children  Child[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Child {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  age       Int
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
