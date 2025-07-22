@@ -50,3 +50,12 @@ uploads/
 public/uploads/
 
 /lib/generated/prisma
+
+# logs
+*.log
+server.log
+dev-server.log
+
+# editor backups
+*~
+#*#
