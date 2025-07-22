@@ -134,20 +134,37 @@ export class GeminiProvider extends BaseAIProvider {
       const objectNames = objects.map(obj => obj.name).join(', ')
       const name = childName || 'Explorer'
       
-      const prompt = `Create a 6-page bedtime science story for ${name}, age ${age}.
+      const prompt = `Create an enchanting 6-page bedtime science story for ${name}, age ${age}.
+
+      STORY CONTEXT:
+      - Main character: ${name} - a curious ${age}-year-old who loves discovering how things work
+      - Setting: Based on objects from their photo: ${objectNames || 'everyday items'}
+      - Science concept: ${concept.name} - ${concept.description}
+      - Tone: ${options?.tone || 'playful'} and wonder-filled
       
-      Photo objects: ${objectNames}
-      Science concept: ${concept.name} - ${concept.description}
-      Tone: ${options?.tone || 'playful'}
+      CHARACTER REQUIREMENTS:
+      - Give ${name} a distinct personality trait (e.g., always asks "why?", loves to draw, collects interesting rocks)
+      - Include a friendly companion character (stuffed animal, pet, or imaginary friend) who joins the adventure
+      - Add supporting characters who help explain concepts (e.g., Grandpa the engineer, Dr. Molecule, Captain Photon)
       
-      Requirements:
-      - Page 1: Introduce ${name} noticing something from their photo
-      - Pages 2-4: Explore the science concept through a fun narrative
-      - Page 5: Simple, safe experiment using household items
-      - Page 6: Wrap up with ${name} feeling proud and sleepy
+      STORY STRUCTURE:
+      - Page 1: Set the scene with vivid sensory details. ${name} discovers something intriguing related to their photo that sparks curiosity
+      - Page 2: The adventure begins! ${name} and their companion start exploring. Use dialogue and action
+      - Page 3: Meet a helpful character who explains the science in a fun, metaphorical way (no lectures!)
+      - Page 4: ${name} makes a personal connection to the concept through hands-on discovery
+      - Page 5: ${options?.includeExperiment !== false ? 'Exciting experiment time! Make it feel like a magical science ritual' : 'A wonderful "aha!" moment where everything clicks'}
+      - Page 6: Cozy ending where ${name} reflects on their discovery, feeling accomplished and ready for sweet dreams
       
-      Each page should be 3-4 sentences, using simple language for a ${age}-year-old.
-      ${options?.includeExperiment !== false ? 'Include a detailed experiment on page 5.' : ''}
+      WRITING STYLE:
+      - Use rich, sensory language appropriate for ${age}-year-olds
+      - Include dialogue to bring characters to life
+      - Add sound effects (Whoosh! Bubble-bubble! Zing!)
+      - Create memorable moments with specific details
+      - Each page should be 4-6 engaging sentences
+      - Include gentle humor and wonder
+      - Make science feel like magic that we can understand
+      
+      IMPORTANT: Make this a story children will request again and again, with characters they'll remember and science that feels like an adventure!
       
       Format as JSON with:
       {
@@ -159,12 +176,13 @@ export class GeminiProvider extends BaseAIProvider {
         "pages": [
           {
             "pageNumber": 1,
-            "content": "Page text",
+            "content": "Page text with dialogue and vivid descriptions",
+            "imagePrompt": "Description for AI image generation focusing on characters and key visual elements",
             "experiment": null or {
-              "title": "Experiment name",
+              "title": "Exciting experiment name",
               "materials": ["item1", "item2"],
-              "steps": ["Step 1", "Step 2"],
-              "safety": "Safety note"
+              "steps": ["Step 1 with enthusiasm", "Step 2 with wonder"],
+              "safety": "Gentle safety reminder"
             }
           }
         ]

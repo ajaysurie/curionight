@@ -13,8 +13,8 @@ export async function POST(request: NextRequest) {
     // Track generation start time
     const startTime = Date.now()
     
-    // Get AI provider (use free tier for MVP)
-    const aiProvider = getAIProvider('free')
+    // Get AI provider - use premium model for better story quality
+    const aiProvider = getAIProvider('premium')
     
     // Generate the story
     const storyResult = await aiProvider.generateStory(

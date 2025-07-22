@@ -13,7 +13,7 @@ import { GooglePhotosInstructions } from '@/components/ui/google-photos-instruct
 import { Navbar } from '@/components/layout/navbar'
 import { usePhotoImport } from '@/hooks/use-photo-import'
 import { toast } from 'sonner'
-import { Upload, Link2, Camera, ArrowLeft, X } from 'lucide-react'
+import { Upload, Link2, Camera, ArrowLeft, X, Sparkles } from 'lucide-react'
 
 export default function CreatePage() {
   const { data: session } = useSession()
@@ -86,18 +86,62 @@ export default function CreatePage() {
         </Link>
 
         <div className="mx-auto max-w-2xl">
-          <h1 className="mb-8 text-center text-4xl font-bold text-white">
+          <h1 className="mb-4 text-center text-4xl font-bold text-white">
             Create Your Story
           </h1>
+          <p className="mb-8 text-center text-lg text-purple-200">
+            Choose how you'd like to start your science adventure!
+          </p>
+
+          {/* Choice Cards */}
+          <div className="mb-8 grid gap-6 md:grid-cols-2">
+            <Card className="border-purple-700 bg-purple-900/50 transition-all hover:scale-105 hover:shadow-xl">
+              <CardContent className="p-6">
+                <div className="mb-4 flex justify-center">
+                  <Camera className="h-16 w-16 text-yellow-300" />
+                </div>
+                <h2 className="mb-3 text-center text-xl font-bold text-white">Start with a Photo</h2>
+                <p className="mb-6 text-center text-purple-200">
+                  Upload a photo and we'll find science topics connected to what we see!
+                </p>
+                <Button
+                  onClick={() => {
+                    // Scroll to photo section
+                    document.getElementById('photo-section')?.scrollIntoView({ behavior: 'smooth' })
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700"
+                >
+                  Choose Photo
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-purple-700 bg-purple-900/50 transition-all hover:scale-105 hover:shadow-xl">
+              <CardContent className="p-6">
+                <div className="mb-4 flex justify-center">
+                  <Sparkles className="h-16 w-16 text-teal-300" />
+                </div>
+                <h2 className="mb-3 text-center text-xl font-bold text-white">Explore Topics</h2>
+                <p className="mb-6 text-center text-purple-200">
+                  Browse exciting science topics and pick what interests you most!
+                </p>
+                <Link href="/create/topics-preset">
+                  <Button className="w-full bg-teal-600 hover:bg-teal-700">
+                    Browse Topics
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Child Info */}
           <Card className="mb-8 border-purple-700 bg-purple-900/50">
             <CardContent className="p-6">
-              <h2 className="mb-4 text-xl font-semibold text-white">Who's the story for?</h2>
+              <h2 className="mb-4 text-xl font-semibold text-white">Tell us about yourself!</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="name" className="text-purple-100">
-                    Child's Name (optional)
+                    Your Name (optional)
                   </Label>
                   <Input
                     id="name"
@@ -129,9 +173,12 @@ export default function CreatePage() {
           </Card>
 
           {/* Photo Upload */}
-          <Card className="mb-8 border-purple-700 bg-purple-900/50">
+          <Card id="photo-section" className="mb-8 border-purple-700 bg-purple-900/50">
             <CardContent className="p-6">
-              <h2 className="mb-4 text-xl font-semibold text-white">Add a Photo</h2>
+              <h2 className="mb-4 text-xl font-semibold text-white">📸 Add a Photo (Optional)</h2>
+              <p className="mb-4 text-sm text-purple-200">
+                Upload a photo to get personalized topics, or skip this to browse all topics!
+              </p>
               
               <Tabs defaultValue="upload">
                 <TabsList className="grid w-full grid-cols-2">
