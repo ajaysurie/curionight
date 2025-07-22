@@ -2,6 +2,7 @@ export interface StoryPage {
   pageNumber: number
   content: string
   imagePrompt?: string
+  imageUrl?: string
   experiment?: {
     title: string
     materials: string[]

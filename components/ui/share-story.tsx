@@ -54,15 +54,12 @@ export function ShareStory({ storyId, shareToken, childName }: ShareStoryProps) 
   
   return (
     <>
-      <Button
-        variant="outline"
-        size="sm"
+      <button
         onClick={handleShare}
-        className="border-purple-400 bg-purple-900/50 text-purple-100 hover:bg-purple-800/50"
+        className="rounded-full bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
       >
-        <Share2 className="mr-2 h-4 w-4" />
-        Share Story
-      </Button>
+        <Share2 className="h-6 w-6 text-white" />
+      </button>
       
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="border-purple-700 bg-purple-950 text-white">

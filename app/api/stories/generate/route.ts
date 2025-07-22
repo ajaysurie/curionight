@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { generateStorySchema } from '@/lib/validations'
 import { getAIProvider } from '@/lib/ai/factory'
 import { prisma } from '@/lib/db/prisma'
+import { getImageGenerationService } from '@/lib/services/image-generation'
 
 export async function POST(request: NextRequest) {
   try {
@@ -34,6 +35,27 @@ export async function POST(request: NextRequest) {
     
     const generationTime = Date.now() - startTime
     
+    // Generate images for each page
+    const imageService = getImageGenerationService()
+    const pagesWithImages = await Promise.all(
+      storyResult.story.pages.map(async (page) => {
+        if (page.imagePrompt) {
+          try {
+            // For now, use SVG placeholders
+            const imageUrl = await imageService.generatePlaceholderSVG(
+              page.imagePrompt,
+              page.pageNumber
+            )
+            return { ...page, imageUrl }
+          } catch (error) {
+            console.error('Error generating image for page', page.pageNumber, error)
+            return page
+          }
+        }
+        return page
+      })
+    )
+    
     // Generate a share token for the story
     const shareToken = Math.random().toString(36).substring(2) + Date.now().toString(36)
     
@@ -45,7 +67,7 @@ export async function POST(request: NextRequest) {
         detectedObjects: validated.objects as any,
         concept: storyResult.story.concept as any,
         topicPreview: storyResult.story.topicPreview as any,
-        pages: storyResult.story.pages as any,
+        pages: pagesWithImages as any,
         modelUsed: aiProvider.model,
         generationTime,
         shareToken,
@@ -55,7 +77,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       storyId: story.id,
       shareToken: story.shareToken,
-      story: storyResult.story,
+      story: {
+        ...storyResult.story,
+        pages: pagesWithImages,
+      },
       generationTime,
     })
   } catch (error) {
