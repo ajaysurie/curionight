@@ -12,14 +12,16 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: 'desc',
       },
-      take: 10,
+      take: 20, // Increased limit
       select: {
         id: true,
         childName: true,
+        childAge: true,
         concept: true,
         topicPreview: true,
         shareToken: true,
         createdAt: true,
+        pages: true, // Include pages to potentially extract thumbnails
       },
     })
     

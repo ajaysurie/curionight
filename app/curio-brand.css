@@ -1,0 +1,158 @@
+/* Curio Brand System v0.2 - Design Tokens */
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* Core Brand Colors - Galaxy Set */
+  --color-night-purple: #6B5ECF;
+  --color-midnight: #372673;
+  --color-sky-blue: #3ABFF8;
+  --color-peach: #FFB4A2;
+  --color-mint: #5EEAD4;
+  
+  /* Explorer Sub-Theme */
+  --explorer-teal-500: #00A8B5;
+  --explorer-teal-700: #007C88;
+  --explorer-coral-500: #FF7043;
+  --explorer-coral-700: #E6572B;
+  --explorer-sunshine: #FFC94D;
+  
+  /* Spacing (8-pt grid) */
+  --space-4: 0.25rem;
+  --space-8: 0.5rem;
+  --space-12: 0.75rem;
+  --space-16: 1rem;
+  --space-24: 1.5rem;
+  --space-32: 2rem;
+  
+  /* Radius */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 2rem;
+  
+  /* Elevation */
+  --elevation-1: 0 1px 3px rgba(0,0,0,.1);
+  --elevation-2: 0 2px 6px rgba(0,0,0,.12);
+  --elevation-3: 0 4px 12px rgba(0,0,0,.14);
+  
+  /* Motion */
+  --motion-fast: 100ms cubic-bezier(0.4,0,1,1);
+  --motion-std: 200ms cubic-bezier(0.4,0,0.2,1);
+  --motion-slow: 400ms cubic-bezier(0.4,0,0.2,1);
+  --motion-amplitude-max: 4px;
+  
+  /* Typography */
+  --font-display: 'Baloo 2', cursive;
+  --font-body: 'Atkinson Hyperlegible', sans-serif;
+  --font-ui: 'Inter', sans-serif;
+}
+
+/* Typography Classes */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+.font-ui {
+  font-family: var(--font-ui);
+}
+
+/* Gradient Classes */
+.galaxy-gradient {
+  background: linear-gradient(135deg, var(--color-night-purple) 0%, var(--color-sky-blue) 100%);
+}
+
+.galaxy-gradient-reverse {
+  background: linear-gradient(135deg, var(--color-sky-blue) 0%, var(--color-night-purple) 100%);
+}
+
+/* Text Gradient */
+.text-gradient {
+  background: linear-gradient(135deg, var(--color-night-purple) 0%, var(--color-sky-blue) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Motion Classes */
+@media (prefers-reduced-motion: no-preference) {
+  .motion-safe\:animate-bounce-small {
+    animation: bounce-small var(--motion-std) ease-in-out;
+  }
+  
+  .motion-safe\:animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+}
+
+@keyframes bounce-small {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* Focus Styles */
+.focus-ring-sky:focus {
+  outline: 2px solid var(--color-sky-blue);
+  outline-offset: 2px;
+}
+
+.dark .focus-ring-peach:focus {
+  outline: 2px solid var(--color-peach);
+  outline-offset: 2px;
+}
+
+/* Card Styles */
+.card-curio {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--elevation-2);
+}
+
+/* Button Styles */
+.btn-primary {
+  background: var(--color-sky-blue);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-24);
+  transition: all var(--motion-std);
+}
+
+.btn-primary:hover {
+  background: #2E9FD8;
+  transform: translateY(-1px);
+  box-shadow: var(--elevation-2);
+}
+
+.btn-secondary {
+  background: var(--color-peach);
+  color: var(--color-midnight);
+  font-family: var(--font-display);
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  padding: var(--space-12) var(--space-24);
+  transition: all var(--motion-std);
+}
+
+/* Heading Styles */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+}
+
+/* Accessibility Toggle for Font */
+.accessibility-font-enabled * {
+  font-family: var(--font-body) !important;
+}

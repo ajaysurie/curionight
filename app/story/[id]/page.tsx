@@ -6,6 +6,7 @@ import { StoryPageViewer } from '@/components/story/story-page-viewer'
 import { ShareStory } from '@/components/ui/share-story'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Home, RotateCcw, Volume2, VolumeX } from 'lucide-react'
+import { CurioCharacter } from '@/components/story/curio-character'
 import { toast } from 'sonner'
 
 interface StoryPageProps {
@@ -20,7 +21,7 @@ export default function StoryPage({ params }: StoryPageProps) {
   const [story, setStory] = useState<any>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
-  const [isMuted, setIsMuted] = useState(false)
+  const [isMuted, setIsMuted] = useState(true) // Start muted to respect autoplay policies
   const [showCelebration, setShowCelebration] = useState(false)
   const [audioElements, setAudioElements] = useState<HTMLAudioElement[]>([])
 
@@ -43,10 +44,17 @@ export default function StoryPage({ params }: StoryPageProps) {
   useEffect(() => {
     // Play audio for current page
     if (audioElements[currentPage] && !isMuted) {
-      audioElements.forEach(audio => audio.pause())
-      audioElements[currentPage].play().catch(() => {
+      // Pause all other audio
+      audioElements.forEach((audio, index) => {
+        if (index !== currentPage) audio.pause()
+      })
+      // Play current page audio
+      audioElements[currentPage].play().catch((err) => {
+        console.log('Audio play failed:', err)
         // Audio play failed - likely autoplay policy
       })
+    } else if (isMuted && audioElements[currentPage]) {
+      audioElements[currentPage].pause()
     }
   }, [currentPage, audioElements, isMuted])
 
@@ -143,6 +151,22 @@ export default function StoryPage({ params }: StoryPageProps) {
           </motion.div>
         )}
       </AnimatePresence>
+      
+      {/* Curio Guide for first page */}
+      {currentPage === 0 && (
+        <motion.div
+          initial={{ opacity: 0, x: -100 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1, duration: 0.5 }}
+          className="absolute bottom-20 left-8 z-30"
+        >
+          <CurioCharacter 
+            message="Let's explore together!" 
+            mood="excited" 
+            size="medium"
+          />
+        </motion.div>
+      )}
 
       {/* Main story content */}
       <AnimatePresence mode="wait">
@@ -186,16 +210,37 @@ export default function StoryPage({ params }: StoryPageProps) {
         </button>
         
         <div className="flex gap-2">
-          <button
+          <motion.button
             onClick={toggleMute}
-            className="rounded-full bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+            className="relative rounded-full bg-white/10 p-2 backdrop-blur-sm transition-all hover:bg-white/20"
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.95 }}
           >
             {isMuted ? (
-              <VolumeX className="h-6 w-6 text-white" />
+              <>
+                <VolumeX className="h-6 w-6 text-white" />
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/70 px-2 py-1 text-xs text-white"
+                >
+                  Tap for narration
+                </motion.div>
+              </>
             ) : (
-              <Volume2 className="h-6 w-6 text-white" />
+              <>
+                <Volume2 className="h-6 w-6 text-white" />
+                <motion.div
+                  className="absolute inset-0 rounded-full"
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                  style={{ 
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%)' 
+                  }}
+                />
+              </>
             )}
-          </button>
+          </motion.button>
           
           <ShareStory
             storyId={story.id}

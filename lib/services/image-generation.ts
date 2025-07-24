@@ -56,16 +56,35 @@ export class ImageGenerationService {
     prompt: string,
     pageNumber: number
   ): Promise<string> {
-    // Extract key elements from the prompt
-    const elements = this.extractKeyElements(prompt)
-    
-    // Create a simple, colorful SVG based on the story elements
-    const svg = this.createStoryScene(elements, pageNumber)
-    
-    // Convert to data URL
-    const svgDataUrl = `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`
-    
-    return svgDataUrl
+    try {
+      // Extract key elements from the prompt
+      const elements = this.extractKeyElements(prompt)
+      
+      // Create a simple, colorful SVG based on the story elements
+      const svg = this.createStoryScene(elements, pageNumber)
+      
+      // Optimize SVG - remove unnecessary whitespace and compress
+      const optimizedSvg = svg.replace(/\s+/g, ' ').trim()
+      
+      // Convert to data URL with URL encoding instead of base64 (smaller)
+      const svgDataUrl = `data:image/svg+xml,${encodeURIComponent(optimizedSvg)}`
+      
+      return svgDataUrl
+    } catch (error) {
+      console.error('Error generating SVG:', error)
+      // Return a simple fallback SVG
+      return this.getFallbackSVG(pageNumber)
+    }
+  }
+  
+  private getFallbackSVG(pageNumber: number): string {
+    const colors = ['#9333ea', '#7c3aed', '#6366f1', '#3b82f6']
+    const color = colors[pageNumber % colors.length]
+    const svg = `<svg width="800" height="600" xmlns="http://www.w3.org/2000/svg">
+      <rect width="800" height="600" fill="${color}"/>
+      <circle cx="400" cy="300" r="100" fill="white" opacity="0.3"/>
+    </svg>`
+    return `data:image/svg+xml,${encodeURIComponent(svg)}`
   }
   
   private extractKeyElements(prompt: string): string[] {
@@ -116,8 +135,8 @@ export class ImageGenerationService {
       found.push('star', 'cloud')
     }
     
-    // Limit to 5 elements for better composition
-    return found.slice(0, 5)
+    // Limit to 3 elements to reduce memory usage
+    return found.slice(0, 3)
   }
   
   private createStoryScene(elements: string[], pageNumber: number): string {
@@ -348,7 +367,7 @@ export class ImageGenerationService {
   }
   
   private createFloatingParticles(width: number, height: number, color: string): string {
-    return Array.from({ length: 20 }, (_, i) => {
+    return Array.from({ length: 10 }, (_, i) => {
       const x = Math.random() * width
       const y = Math.random() * height
       const size = Math.random() * 3 + 1

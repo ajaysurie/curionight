@@ -44,11 +44,19 @@ export function useStoryGeneration() {
       setProgress(100)
 
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Failed to generate story')
+        let errorMessage = 'Failed to generate story'
+        try {
+          const data = await response.json()
+          console.error('Story generation API error:', data)
+          errorMessage = data.error || errorMessage
+        } catch (e) {
+          console.error('Failed to parse error response:', e)
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
+      console.log('Story generation successful:', result)
       return result
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to generate story')

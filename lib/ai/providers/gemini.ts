@@ -141,10 +141,11 @@ export class GeminiProvider extends BaseAIProvider {
       - Setting: Based on objects from their photo: ${objectNames || 'everyday items'}
       - Science concept: ${concept.name} - ${concept.description}
       - Tone: ${options?.tone || 'playful'} and wonder-filled
+      - IMPORTANT: Include "Curio" (the wise owl mascot) in the story title and as a guide character
       
       CHARACTER REQUIREMENTS:
       - Give ${name} a distinct personality trait (e.g., always asks "why?", loves to draw, collects interesting rocks)
-      - Include a friendly companion character (stuffed animal, pet, or imaginary friend) who joins the adventure
+      - Include Curio the Owl as a friendly guide who helps ${name} discover science
       - Add supporting characters who help explain concepts (e.g., Grandpa the engineer, Dr. Molecule, Captain Photon)
       
       STORY STRUCTURE:
@@ -169,15 +170,15 @@ export class GeminiProvider extends BaseAIProvider {
       Format as JSON with:
       {
         "topicPreview": {
-          "title": "Story title",
-          "teaser": "One sentence hook",
+          "title": "Story title (must include 'Curio' in the title)",
+          "teaser": "One sentence hook mentioning Curio the owl",
           "estimatedDuration": 5
         },
         "pages": [
           {
             "pageNumber": 1,
             "content": "Page text with dialogue and vivid descriptions",
-            "imagePrompt": "Description for AI image generation focusing on characters and key visual elements",
+            "imagePrompt": "Description for AI image generation (include Curio the purple owl with the child)",
             "experiment": null or {
               "title": "Exciting experiment name",
               "materials": ["item1", "item2"],

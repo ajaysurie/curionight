@@ -104,7 +104,7 @@ export default function DashboardPage() {
               <p className="mb-4 text-purple-200">
                 Choose from your recent photos or upload a new one
               </p>
-              <Link href="/create">
+              <Link href="/">
                 <Button className="w-full bg-purple-600 hover:bg-purple-700">
                   <Plus className="mr-2 h-4 w-4" />
                   Start Creating
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 {recentPhotos.slice(0, 8).map((photo) => (
                   <Link
                     key={photo.id}
-                    href={`/create?photo=${encodeURIComponent(photo.url)}`}
+                    href={`/?photo=${encodeURIComponent(photo.url)}`}
                     className="group relative overflow-hidden rounded-lg"
                   >
                     <img
@@ -212,7 +212,7 @@ export default function DashboardPage() {
             <Card className="border-purple-700 bg-purple-900/50">
               <CardContent className="py-8 text-center">
                 <p className="mb-4 text-purple-200">No stories yet!</p>
-                <Link href="/create">
+                <Link href="/">
                   <Button className="bg-purple-600 hover:bg-purple-700">
                     Create Your First Story
                   </Button>

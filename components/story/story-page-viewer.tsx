@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion'
 import { StoryPage } from '@/types/story'
 import { cn } from '@/lib/utils'
+import { getChildName } from '@/lib/utils/names'
 
 interface StoryPageViewerProps {
   page: StoryPage
@@ -52,10 +53,12 @@ export function StoryPageViewer({
 
 // Cover page with full imagery
 function CoverPage({ story, onStart }: { story: any; onStart?: () => void }) {
+  const childName = getChildName(story.childName)
+  
   return (
     <div className="relative h-full w-full overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-950 via-indigo-900 to-purple-950" />
+      <div className="absolute inset-0 galaxy-gradient" />
       
       {/* Animated stars */}
       <div className="absolute inset-0">
@@ -86,16 +89,16 @@ function CoverPage({ story, onStart }: { story: any; onStart?: () => void }) {
           initial={{ y: -50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="mb-4 text-6xl font-black text-white drop-shadow-2xl md:text-8xl"
+          className="mb-4 font-display text-6xl font-black text-white drop-shadow-2xl md:text-8xl"
         >
-          {story.childName || 'Explorer'}'s
+          {childName}'s
         </motion.h1>
         
         <motion.h2
           initial={{ y: -30, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.4 }}
-          className="mb-8 text-4xl font-bold text-yellow-300 drop-shadow-lg md:text-6xl"
+          className="mb-8 font-display text-4xl font-bold text-yellow-300 drop-shadow-lg md:text-6xl"
         >
           Science Adventure
         </motion.h2>
@@ -104,7 +107,7 @@ function CoverPage({ story, onStart }: { story: any; onStart?: () => void }) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 0.6 }}
-          className="mb-12 text-2xl text-purple-100 md:text-3xl"
+          className="mb-12 font-body text-2xl text-purple-100 md:text-3xl"
         >
           Discovering {story.concept?.name || 'Amazing Science'}
         </motion.p>
@@ -116,7 +119,7 @@ function CoverPage({ story, onStart }: { story: any; onStart?: () => void }) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={onStart}
-          className="rounded-full bg-gradient-to-r from-purple-500 to-pink-500 px-12 py-4 text-2xl font-bold text-white shadow-2xl transition-all hover:shadow-purple-500/25"
+          className="btn-primary px-12 py-4 text-2xl font-bold shadow-2xl transition-all hover:shadow-purple-500/25"
         >
           Begin Story →
         </motion.button>
@@ -160,7 +163,7 @@ function FullBleedLayout({ page }: { page: StoryPage }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
-              className="mb-4 text-2xl leading-relaxed text-white drop-shadow-lg md:text-3xl"
+              className="mb-4 font-body text-2xl leading-relaxed text-white drop-shadow-lg md:text-3xl"
             >
               {paragraph}
             </motion.p>
@@ -207,7 +210,7 @@ function SplitLayout({ page }: { page: StoryPage }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + i * 0.1 }}
-              className="mb-6 text-xl leading-relaxed text-white md:text-2xl"
+              className="mb-6 font-body text-xl leading-relaxed text-white md:text-2xl"
             >
               {paragraph}
             </motion.p>
@@ -250,7 +253,7 @@ function FloatingTextLayout({ page }: { page: StoryPage }) {
               transition={{ delay: 0.2 + i * 0.15 }}
               className="rounded-2xl bg-white/90 p-6 backdrop-blur-sm"
             >
-              <p className="text-xl leading-relaxed text-gray-800 md:text-2xl">
+              <p className="font-body text-xl leading-relaxed text-gray-800 md:text-2xl">
                 {paragraph}
               </p>
             </motion.div>
@@ -279,7 +282,7 @@ function ExperimentPage({ page }: { page: StoryPage }) {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.2 }}
-            className="mb-4 text-5xl font-black text-white md:text-6xl"
+            className="mb-4 font-display text-5xl font-black text-white md:text-6xl"
           >
             🧪 Experiment Time! 🧪
           </motion.h2>
@@ -287,7 +290,7 @@ function ExperimentPage({ page }: { page: StoryPage }) {
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3 }}
-            className="text-3xl font-bold text-yellow-200 md:text-4xl"
+            className="font-display text-3xl font-bold text-yellow-200 md:text-4xl"
           >
             {page.experiment.title}
           </motion.h3>
@@ -439,7 +442,7 @@ function EndingPage({ page, story }: { page: StoryPage; story: any }) {
             ))}
           </div>
           <p className="mt-4 text-xl font-medium text-purple-200">
-            Sweet dreams, {story.childName || 'little scientist'}
+            Sweet dreams, {getChildName(story.childName)}
           </p>
         </motion.div>
       </div>

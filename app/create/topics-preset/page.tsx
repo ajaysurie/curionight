@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { ChildFriendlyButton } from '@/components/ui/child-friendly-button'
 import { useStoryGeneration } from '@/hooks/use-story-generation'
 import { getRandomFunFact } from '@/lib/services/fun-facts'
@@ -28,6 +27,7 @@ const categoryColors = {
 }
 
 export default function PresetTopicsPage() {
+  console.log('PresetTopicsPage rendering')
   const router = useRouter()
   const { generateStory, isGenerating, progress } = useStoryGeneration()
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null)
@@ -43,53 +43,53 @@ export default function PresetTopicsPage() {
   }, {} as Record<string, typeof scienceConcepts>)
 
   const handleTopicSelect = async (conceptId: string) => {
-    setSelectedConcept(conceptId)
-    
-    const childName = sessionStorage.getItem('childName') || undefined
-    const childAge = parseInt(sessionStorage.getItem('childAge') || '6')
-    
-    const result = await generateStory({
-      objects: [], // No objects from photo
-      conceptId,
-      age: childAge,
-      childName,
-      options: {
-        tone: 'playful',
-        includeExperiment: true,
-      },
-    })
+    try {
+      setSelectedConcept(conceptId)
+      
+      const childName = sessionStorage.getItem('childName') || undefined
+      const childAge = parseInt(sessionStorage.getItem('childAge') || '6')
+      
+      const result = await generateStory({
+        objects: [], // No objects from photo
+        conceptId,
+        age: childAge,
+        childName,
+        options: {
+          tone: 'playful',
+          includeExperiment: true,
+        },
+      })
 
-    if (result) {
-      router.push(`/story/${result.shareToken || result.storyId}`)
+      if (result) {
+        router.push(`/story/${result.shareToken || result.storyId}`)
+      } else {
+        // Show error toast if generation failed
+        toast.error('Failed to generate story. Please try again.')
+        setSelectedConcept(null)
+      }
+    } catch (error) {
+      console.error('Story generation error:', error)
+      toast.error('Something went wrong. Please try again.')
+      setSelectedConcept(null)
     }
   }
 
   if (isGenerating) {
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-purple-950 to-indigo-900 p-8">
-        <motion.div
-          animate={{ scale: [1, 1.2, 1] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-          className="mb-8 text-8xl"
-        >
+        <div className="mb-8 text-8xl animate-pulse">
           📖
-        </motion.div>
+        </div>
         <h2 className="mb-4 text-3xl font-bold text-white">Creating Your Story...</h2>
         <div className="mb-4 h-4 w-64 overflow-hidden rounded-full bg-purple-800">
-          <motion.div
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            className="h-full bg-gradient-to-r from-yellow-400 to-purple-400"
+          <div
+            style={{ width: `${progress}%` }}
+            className="h-full bg-gradient-to-r from-yellow-400 to-purple-400 transition-all duration-300"
           />
         </div>
-        <motion.p
-          key={funFact}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-md text-center text-lg text-purple-200"
-        >
+        <p className="max-w-md text-center text-lg text-purple-200">
           Did you know? {funFact}
-        </motion.p>
+        </p>
       </div>
     )
   }
@@ -130,22 +130,31 @@ export default function PresetTopicsPage() {
                 
                 <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {concepts.map((concept, index) => (
-                    <motion.div
-                      key={concept.id}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                    >
+                    <div key={concept.id}>
                       <button
-                        onClick={() => handleTopicSelect(concept.id)}
-                        disabled={isGenerating}
+                        onClick={(e) => {
+                          e.preventDefault()
+                          handleTopicSelect(concept.id)
+                        }}
+                        disabled={isGenerating || selectedConcept === concept.id}
+                        type="button"
                         className="group relative h-full w-full overflow-hidden rounded-3xl bg-white/90 p-6 text-left shadow-xl transition-all hover:scale-105 hover:shadow-2xl disabled:opacity-50"
                       >
                         {/* Background gradient */}
                         <div className={cn(
-                          "absolute inset-0 bg-gradient-to-br opacity-10 transition-opacity group-hover:opacity-20",
+                          "absolute inset-0 bg-gradient-to-br transition-opacity",
+                          selectedConcept === concept.id ? "opacity-30" : "opacity-10 group-hover:opacity-20",
                           gradientClass
                         )} />
+                        
+                        {/* Loading indicator */}
+                        {selectedConcept === concept.id && isGenerating && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-white/80">
+                            <div className="animate-spin">
+                              <Sparkles className="h-12 w-12 text-purple-600" />
+                            </div>
+                          </div>
+                        )}
                         
                         {/* Age badge */}
                         <div className="absolute right-4 top-4">
@@ -166,15 +175,12 @@ export default function PresetTopicsPage() {
                           <span className="text-sm text-purple-600">
                             Tap to explore! 🚀
                           </span>
-                          <motion.div
-                            animate={{ x: [0, 5, 0] }}
-                            transition={{ duration: 1.5, repeat: Infinity }}
-                          >
+                          <div className="animate-pulse">
                             <Sparkles className="h-6 w-6 text-yellow-500" />
-                          </motion.div>
+                          </div>
                         </div>
                       </button>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
               </div>
