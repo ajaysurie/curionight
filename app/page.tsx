@@ -11,21 +11,19 @@ import { Label } from '@/components/ui/label'
 import { Navbar } from '@/components/layout/navbar'
 import { usePhotoImport } from '@/hooks/use-photo-import'
 import { toast } from 'sonner'
-import { Camera, Sparkles, Book, Clock, Upload, X, ImageIcon, ChevronRight } from 'lucide-react'
+import { Camera, Sparkles, Book, Clock, Upload, X, ImageIcon, ChevronRight, Wand2 } from 'lucide-react'
 import Image from 'next/image'
+import { MagicMixingPot } from '@/components/story/magic-mixing-pot'
 
 export default function Home() {
   const { data: session } = useSession()
   const router = useRouter()
   const searchParams = useSearchParams()
   const { photos, isLoading, error, importFromFile, importFromUrl, clearPhotos } = usePhotoImport()
-  const [childName, setChildName] = useState('')
-  const [childAge, setChildAge] = useState('6')
-  const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [showPhotoUpload, setShowPhotoUpload] = useState(false)
   const [stories, setStories] = useState<any[]>([])
   const [loadingStories, setLoadingStories] = useState(true)
   const [showAllStories, setShowAllStories] = useState(false)
+  const [showMagicPot, setShowMagicPot] = useState(false)
 
   // Load recent stories
   useEffect(() => {
@@ -37,18 +35,9 @@ export default function Home() {
     const photoUrl = searchParams.get('photo')
     if (photoUrl) {
       importFromUrl(decodeURIComponent(photoUrl))
-      setShowPhotoUpload(true)
+      setShowMagicPot(true)
     }
   }, [searchParams, importFromUrl])
-
-  // Store child info whenever it changes
-  useEffect(() => {
-    if (childName) {
-      sessionStorage.setItem('childName', childName)
-      window.dispatchEvent(new Event('childNameUpdated'))
-    }
-    if (childAge) sessionStorage.setItem('childAge', childAge)
-  }, [childName, childAge])
 
   const loadRecentStories = async () => {
     try {
@@ -92,30 +81,6 @@ export default function Home() {
     return icons[category] || icons.default
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      await importFromFile(file)
-      setActiveMode('photo')
-    }
-  }
-
-  const handlePhotoAnalyze = async () => {
-    if (photos.length === 0) {
-      toast.error('Please add a photo first')
-      return
-    }
-
-    setIsAnalyzing(true)
-    
-    try {
-      sessionStorage.setItem('photoUrl', photos[0].url)
-      router.push('/create/topics')
-    } catch (err) {
-      toast.error('Failed to process photo')
-      setIsAnalyzing(false)
-    }
-  }
 
 
   return (
@@ -182,50 +147,15 @@ export default function Home() {
 
 
         {/* Create Story Section */}
-        <div className="mb-10">
-          <h2 className="mb-6 text-center text-2xl font-bold text-white">Create a New Story with Curio</h2>
-          
-          {/* Child Info Card */}
-          <Card className="mb-6 border-purple-700 bg-purple-900/50 max-w-2xl mx-auto">
-            <CardContent className="p-6">
-              <h3 className="mb-4 text-lg font-semibold text-white">
-                <span className="mr-2 text-xl">👋</span>
-                Who's the explorer?
-              </h3>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <Label htmlFor="name" className="text-purple-100">
-                    Name
-                  </Label>
-                  <Input
-                    id="name"
-                    value={childName}
-                    onChange={(e) => setChildName(e.target.value)}
-                    placeholder="Enter your name"
-                    className="border-purple-600 bg-purple-800/50 text-white placeholder:text-purple-300"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="age" className="text-purple-100">
-                    Age
-                  </Label>
-                  <select
-                    id="age"
-                    value={childAge}
-                    onChange={(e) => setChildAge(e.target.value)}
-                    className="flex h-10 w-full rounded-md border border-purple-600 bg-purple-800/50 px-3 py-2 text-sm text-white"
-                  >
-                    <option value="4">4 years</option>
-                    <option value="5">5 years</option>
-                    <option value="6">6 years</option>
-                    <option value="7">7 years</option>
-                    <option value="8">8 years</option>
-                  </select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="mb-10 text-center">
+          <h2 className="mb-4 text-2xl font-bold text-white">Create a New Story with Curio</h2>
+          <Button 
+            onClick={() => setShowMagicPot(true)}
+            className="bg-gradient-to-r from-yellow-500 to-orange-500 text-purple-900 hover:from-yellow-400 hover:to-orange-400 px-8 py-6 text-lg font-bold"
+          >
+            <Wand2 className="mr-2 h-6 w-6" />
+            Open Magic Story Pot
+          </Button>
         </div>
 
         {/* Browse Stories Section */}
@@ -325,6 +255,11 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      {/* Magic Mixing Pot Modal */}
+      {showMagicPot && (
+        <MagicMixingPot onClose={() => setShowMagicPot(false)} />
+      )}
     </div>
   )
 }

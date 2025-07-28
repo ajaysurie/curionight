@@ -49,8 +49,12 @@ export default function PresetTopicsPage() {
       const childName = sessionStorage.getItem('childName') || undefined
       const childAge = parseInt(sessionStorage.getItem('childAge') || '6')
       
+      // Check if we have emojis from the magic pot
+      const storyEmojis = sessionStorage.getItem('storyEmojis')
+      const objects = storyEmojis ? JSON.parse(storyEmojis) : []
+      
       const result = await generateStory({
-        objects: [], // No objects from photo
+        objects, // Use emojis as story hints
         conceptId,
         age: childAge,
         childName,
@@ -59,6 +63,11 @@ export default function PresetTopicsPage() {
           includeExperiment: true,
         },
       })
+
+      // Clear the emojis after use
+      if (storyEmojis) {
+        sessionStorage.removeItem('storyEmojis')
+      }
 
       if (result) {
         router.push(`/story/${result.shareToken || result.storyId}`)

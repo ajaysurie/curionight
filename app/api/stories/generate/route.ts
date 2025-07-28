@@ -64,7 +64,6 @@ export async function POST(request: NextRequest) {
     let audioUrls: string[] = []
     
     try {
-      console.log('Generating audio for story pages...')
       const audioResult = await audioProvider.generateAudioForStory(
         pagesWithImages,
         validated.childName
@@ -72,7 +71,6 @@ export async function POST(request: NextRequest) {
       
       if (audioResult.success && audioResult.audioUrls) {
         audioUrls = audioResult.audioUrls
-        console.log(`Generated ${audioUrls.filter(url => url).length} audio files`)
       } else {
         console.warn('Audio generation failed:', audioResult.error)
         // Fill with empty strings to maintain array alignment

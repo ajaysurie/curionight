@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, Home, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import { CurioCharacter } from '@/components/story/curio-character'
 import { toast } from 'sonner'
+import { useSimpleTTS } from '@/hooks/use-simple-tts'
 
 interface StoryPageProps {
   params: Promise<{
@@ -24,39 +25,50 @@ export default function StoryPage({ params }: StoryPageProps) {
   const [isMuted, setIsMuted] = useState(true) // Start muted to respect autoplay policies
   const [showCelebration, setShowCelebration] = useState(false)
   const [audioElements, setAudioElements] = useState<HTMLAudioElement[]>([])
+  const { isSupported: isTTSSupported, isSpeaking, speak, stop } = useSimpleTTS()
+  const [isBrowserTTS, setIsBrowserTTS] = useState(false)
 
   useEffect(() => {
     loadStory()
   }, [id])
 
   useEffect(() => {
-    // Load audio for all pages
+    // Check if using browser TTS
     if (story?.audioUrls && story.audioUrls.length > 0) {
-      const audios = story.audioUrls.map((url: string) => {
-        const audio = new Audio(url)
-        audio.preload = 'auto'
-        return audio
-      })
-      setAudioElements(audios)
+      const firstUrl = story.audioUrls[0]
+      if (firstUrl.startsWith('browser-tts:')) {
+        setIsBrowserTTS(true)
+      } else if (firstUrl && firstUrl !== '') {
+        // Load audio for all pages
+        const audios = story.audioUrls.map((url: string) => {
+          if (url && !url.startsWith('browser-tts:')) {
+            const audio = new Audio(url)
+            audio.preload = 'auto'
+            return audio
+          }
+          return null
+        }).filter(Boolean) as HTMLAudioElement[]
+        setAudioElements(audios)
+      } else {
+        // No valid audio URLs, use browser TTS as fallback
+        setIsBrowserTTS(true)
+      }
+    } else {
+      // No audio URLs found in story, use browser TTS
+      setIsBrowserTTS(true)
     }
   }, [story])
 
+  // Auto-play audio on page change if already unmuted
   useEffect(() => {
-    // Play audio for current page
-    if (audioElements[currentPage] && !isMuted) {
-      // Pause all other audio
-      audioElements.forEach((audio, index) => {
-        if (index !== currentPage) audio.pause()
-      })
-      // Play current page audio
-      audioElements[currentPage].play().catch((err) => {
-        console.log('Audio play failed:', err)
-        // Audio play failed - likely autoplay policy
-      })
-    } else if (isMuted && audioElements[currentPage]) {
-      audioElements[currentPage].pause()
+    if (!isMuted && story?.pages?.[currentPage] && isBrowserTTS && isTTSSupported) {
+      // Small delay to ensure content is ready
+      const timer = setTimeout(() => {
+        speak(story.pages[currentPage].content)
+      }, 100)
+      return () => clearTimeout(timer)
     }
-  }, [currentPage, audioElements, isMuted])
+  }, [currentPage, isMuted, story, isBrowserTTS, isTTSSupported, speak])
 
   const loadStory = async () => {
     try {
@@ -75,6 +87,10 @@ export default function StoryPage({ params }: StoryPageProps) {
 
   const nextPage = () => {
     if (currentPage < story.pages.length - 1) {
+      // Stop current audio before changing page
+      if (isBrowserTTS && isTTSSupported) {
+        stop()
+      }
       setCurrentPage(currentPage + 1)
       // Celebrate reaching the last page
       if (currentPage === story.pages.length - 2) {
@@ -86,16 +102,36 @@ export default function StoryPage({ params }: StoryPageProps) {
 
   const prevPage = () => {
     if (currentPage > 0) {
+      // Stop current audio before changing page
+      if (isBrowserTTS && isTTSSupported) {
+        stop()
+      }
       setCurrentPage(currentPage - 1)
     }
   }
 
   const toggleMute = () => {
-    setIsMuted(!isMuted)
-    if (isMuted && audioElements[currentPage]) {
-      audioElements[currentPage].play().catch(() => {})
+    const newMutedState = !isMuted
+    setIsMuted(newMutedState)
+    
+    // Use the new state value directly
+    if (!newMutedState) {
+      // Unmuted - start playing
+      if (isBrowserTTS && isTTSSupported && story?.pages?.[currentPage]) {
+        // Small delay to ensure state has updated
+        setTimeout(() => {
+          speak(story.pages[currentPage].content)
+        }, 10)
+      } else if (audioElements[currentPage]) {
+        audioElements[currentPage].play().catch((err) => console.error('Audio play error:', err))
+      }
     } else {
-      audioElements.forEach(audio => audio.pause())
+      // Muted - stop playing
+      if (isBrowserTTS && isTTSSupported) {
+        stop()
+      } else {
+        audioElements.forEach(audio => audio.pause())
+      }
     }
   }
 

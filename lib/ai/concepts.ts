@@ -1,6 +1,16 @@
 import { ScienceConcept } from '@/types/story'
 
 export const scienceConcepts: ScienceConcept[] = [
+  // Special emoji-based adventure
+  {
+    id: 'emoji-adventure',
+    name: 'Magical Emoji Adventure',
+    category: 'Mixed',
+    description: 'A special adventure created from your magical ingredients',
+    keywords: ['magic', 'adventure', 'explore', 'discover', 'emoji'],
+    ageRange: { min: 4, max: 8 },
+  },
+  
   // Physics
   {
     id: 'gravity',

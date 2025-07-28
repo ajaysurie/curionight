@@ -134,11 +134,17 @@ export class GeminiProvider extends BaseAIProvider {
       const objectNames = objects.map(obj => obj.name).join(', ')
       const name = childName || 'Explorer'
       
+      // Check if we're dealing with emojis (special concept)
+      const isEmojiStory = conceptId === 'emoji-adventure'
+      const contextDescription = isEmojiStory 
+        ? `The child has chosen these magical ingredients for their story: ${objectNames}. Use these emojis as inspiration for the adventure!`
+        : `Objects from photo: ${objectNames}`
+      
       const prompt = `Create an enchanting 6-page bedtime science story for ${name}, age ${age}.
 
       STORY CONTEXT:
       - Main character: ${name} - a curious ${age}-year-old who loves discovering how things work
-      - Setting: Based on objects from their photo: ${objectNames || 'everyday items'}
+      - Setting: ${contextDescription}
       - Science concept: ${concept.name} - ${concept.description}
       - Tone: ${options?.tone || 'playful'} and wonder-filled
       - IMPORTANT: Include "Curio" (the wise owl mascot) in the story title and as a guide character

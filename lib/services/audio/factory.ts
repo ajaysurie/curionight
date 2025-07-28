@@ -2,23 +2,27 @@ import { BaseAudioProvider } from './base'
 import { GeminiTTSProvider } from './gemini-tts'
 import { ElevenLabsProvider } from './elevenlabs'
 import { MockTTSProvider } from './mock-tts'
+import { BrowserTTSProvider } from './browser-tts'
 
-export type AudioProviderType = 'gemini' | 'elevenlabs' | 'mock'
+export type AudioProviderType = 'gemini' | 'elevenlabs' | 'mock' | 'browser'
 
 export function getAudioProvider(provider?: AudioProviderType): BaseAudioProvider {
   // Use environment variable if provider not specified
-  const audioProvider = provider || (process.env.AUDIO_PROVIDER as AudioProviderType) || 'mock'
+  const audioProvider = provider || (process.env.AUDIO_PROVIDER as AudioProviderType) || 'browser'
   
   switch (audioProvider) {
     case 'gemini':
-      return new GeminiTTSProvider()
+      // For now, use browser TTS since Gemini speech synthesis is not available
+      return new BrowserTTSProvider()
     case 'elevenlabs':
       return new ElevenLabsProvider()
+    case 'browser':
+      return new BrowserTTSProvider()
     case 'mock':
       return new MockTTSProvider()
     default:
-      // Default to mock TTS for development
-      return new MockTTSProvider()
+      // Default to browser TTS for better user experience
+      return new BrowserTTSProvider()
   }
 }
 
