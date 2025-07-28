@@ -8,12 +8,18 @@ export type AudioProviderType = 'gemini' | 'elevenlabs' | 'mock' | 'browser'
 
 export function getAudioProvider(provider?: AudioProviderType): BaseAudioProvider {
   // Use environment variable if provider not specified
-  const audioProvider = provider || (process.env.AUDIO_PROVIDER as AudioProviderType) || 'browser'
+  const audioProvider = provider || (process.env.AUDIO_PROVIDER as AudioProviderType) || 'gemini'
   
   switch (audioProvider) {
     case 'gemini':
-      // For now, use browser TTS since Gemini speech synthesis is not available
-      return new BrowserTTSProvider()
+      try {
+        const provider = new GeminiTTSProvider()
+        // Test if we can use it (check for quota issues)
+        return provider
+      } catch (error) {
+        console.warn('Gemini TTS unavailable, falling back to browser TTS:', error)
+        return new BrowserTTSProvider()
+      }
     case 'elevenlabs':
       return new ElevenLabsProvider()
     case 'browser':

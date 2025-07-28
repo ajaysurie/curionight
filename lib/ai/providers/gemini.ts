@@ -159,7 +159,7 @@ export class GeminiProvider extends BaseAIProvider {
       - Page 2: The adventure begins! ${name} and their companion start exploring. Use dialogue and action
       - Page 3: Meet a helpful character who explains the science in a fun, metaphorical way (no lectures!)
       - Page 4: ${name} makes a personal connection to the concept through hands-on discovery
-      - Page 5: ${options?.includeExperiment !== false ? 'Exciting experiment time! Make it feel like a magical science ritual' : 'A wonderful "aha!" moment where everything clicks'}
+      - Page 5: A wonderful "aha!" moment where everything clicks - ${name} truly understands the science concept through a memorable discovery
       - Page 6: Cozy ending where ${name} reflects on their discovery, feeling accomplished and ready for sweet dreams
       
       WRITING STYLE:
@@ -170,6 +170,15 @@ export class GeminiProvider extends BaseAIProvider {
       - Each page should be 4-6 engaging sentences
       - Include gentle humor and wonder
       - Make science feel like magic that we can understand
+      
+      VOICE MARKERS FOR AUDIO (IMPORTANT):
+      - Use {{child:"text"}} for when ${name} speaks (youthful voice)
+      - Use {{wise:"text"}} for Curio the Owl's dialogue (knowledgeable voice)
+      - Use {{excited:"text"}} for exciting discoveries or experiments
+      - Use {{gentle:"text"}} for calming, bedtime moments
+      - Use {{friendly:"text"}} for other helpful characters
+      - Regular narration text needs no markers
+      - Example: Curio flapped his wings. {{wise:"Did you know that stars are like giant lanterns in space?"}} {{child:"Wow! Can we visit them?"}} asked ${name} excitedly.
       
       IMPORTANT: Make this a story children will request again and again, with characters they'll remember and science that feels like an adventure!
       
@@ -184,13 +193,7 @@ export class GeminiProvider extends BaseAIProvider {
           {
             "pageNumber": 1,
             "content": "Page text with dialogue and vivid descriptions",
-            "imagePrompt": "Description for AI image generation (include Curio the purple owl with the child)",
-            "experiment": null or {
-              "title": "Exciting experiment name",
-              "materials": ["item1", "item2"],
-              "steps": ["Step 1 with enthusiasm", "Step 2 with wonder"],
-              "safety": "Gentle safety reminder"
-            }
+            "imagePrompt": "Description for AI image generation (include Curio the purple owl with the child)"
           }
         ]
       }`

@@ -59,28 +59,10 @@ export async function POST(request: NextRequest) {
       })
     )
     
-    // Generate audio for all pages
-    const audioProvider = getAudioProvider()
-    let audioUrls: string[] = []
-    
-    try {
-      const audioResult = await audioProvider.generateAudioForStory(
-        pagesWithImages,
-        validated.childName
-      )
-      
-      if (audioResult.success && audioResult.audioUrls) {
-        audioUrls = audioResult.audioUrls
-      } else {
-        console.warn('Audio generation failed:', audioResult.error)
-        // Fill with empty strings to maintain array alignment
-        audioUrls = new Array(pagesWithImages.length).fill('')
-      }
-    } catch (audioError) {
-      console.error('Audio generation error:', audioError)
-      // Continue without audio rather than failing the entire story
-      audioUrls = new Array(pagesWithImages.length).fill('')
-    }
+    // Skip audio generation during story creation for faster loading
+    // Audio will be generated on-demand when the story is viewed
+    console.log('Skipping audio generation for faster story creation')
+    const audioUrls = new Array(pagesWithImages.length).fill('')
     
     // Generate a share token for the story
     const shareToken = Math.random().toString(36).substring(2) + Date.now().toString(36)

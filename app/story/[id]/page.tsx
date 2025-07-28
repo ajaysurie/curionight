@@ -27,48 +27,93 @@ export default function StoryPage({ params }: StoryPageProps) {
   const [audioElements, setAudioElements] = useState<HTMLAudioElement[]>([])
   const { isSupported: isTTSSupported, isSpeaking, speak, stop } = useSimpleTTS()
   const [isBrowserTTS, setIsBrowserTTS] = useState(false)
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false)
+  const [audioCache, setAudioCache] = useState<Record<number, string>>({})
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(null)
 
   useEffect(() => {
     loadStory()
   }, [id])
 
+  // Generate audio on-demand for current page
   useEffect(() => {
-    // Check if using browser TTS
+    if (story && !isBrowserTTS && !audioCache[currentPage]) {
+      console.log('Generating audio for page:', currentPage)
+      generateAudioForPage(currentPage)
+    }
+  }, [currentPage, story, isBrowserTTS, audioCache])
+
+  // Pre-fetch audio for next page
+  useEffect(() => {
+    if (story && !isBrowserTTS && currentPage < story.pages.length - 1 && !audioCache[currentPage + 1]) {
+      prefetchAudioForPage(currentPage + 1)
+    }
+  }, [currentPage, story, isBrowserTTS, audioCache])
+
+  useEffect(() => {
+    // Check if using browser TTS or Gemini TTS
     if (story?.audioUrls && story.audioUrls.length > 0) {
       const firstUrl = story.audioUrls[0]
-      if (firstUrl.startsWith('browser-tts:')) {
+      if (firstUrl === 'browser-tts:' || firstUrl.startsWith('browser-tts:')) {
+        // Explicitly marked as browser TTS
         setIsBrowserTTS(true)
-      } else if (firstUrl && firstUrl !== '') {
-        // Load audio for all pages
-        const audios = story.audioUrls.map((url: string) => {
-          if (url && !url.startsWith('browser-tts:')) {
-            const audio = new Audio(url)
-            audio.preload = 'auto'
-            return audio
-          }
-          return null
-        }).filter(Boolean) as HTMLAudioElement[]
-        setAudioElements(audios)
       } else {
-        // No valid audio URLs, use browser TTS as fallback
-        setIsBrowserTTS(true)
+        // Use Gemini TTS (audio will be generated on-demand)
+        setIsBrowserTTS(false)
       }
     } else {
-      // No audio URLs found in story, use browser TTS
-      setIsBrowserTTS(true)
+      // Use Gemini TTS by default (audio will be generated on-demand)
+      setIsBrowserTTS(false)
     }
   }, [story])
 
   // Auto-play audio on page change if already unmuted
   useEffect(() => {
-    if (!isMuted && story?.pages?.[currentPage] && isBrowserTTS && isTTSSupported) {
-      // Small delay to ensure content is ready
-      const timer = setTimeout(() => {
-        speak(story.pages[currentPage].content)
-      }, 100)
-      return () => clearTimeout(timer)
+    if (!isMuted && story?.pages?.[currentPage]) {
+      if (isBrowserTTS && isTTSSupported) {
+        // Use browser TTS
+        const timer = setTimeout(() => {
+          speak(story.pages[currentPage].content)
+        }, 100)
+        return () => clearTimeout(timer)
+      } else if (audioCache[currentPage]) {
+        // Use generated audio
+        console.log('Playing cached audio for page:', currentPage)
+        const timer = setTimeout(() => {
+          // Stop any existing audio
+          if (currentAudio) {
+            currentAudio.pause()
+            currentAudio.currentTime = 0
+          }
+          
+          const audio = new Audio(audioCache[currentPage])
+          setCurrentAudio(audio)
+          audio.play().catch((err) => {
+            console.log('Audio play failed:', err)
+          })
+        }, 100)
+        return () => {
+          clearTimeout(timer)
+          // Clean up audio when component unmounts or dependencies change
+          if (currentAudio) {
+            currentAudio.pause()
+            currentAudio.currentTime = 0
+          }
+        }
+      }
+    } else if (isMuted) {
+      // Stop all audio when muted
+      if (isBrowserTTS && isTTSSupported) {
+        stop()
+      } else {
+        // Stop any playing audio
+        if (currentAudio) {
+          currentAudio.pause()
+          currentAudio.currentTime = 0
+        }
+      }
     }
-  }, [currentPage, isMuted, story, isBrowserTTS, isTTSSupported, speak])
+  }, [currentPage, isMuted, story, isBrowserTTS, isTTSSupported, audioCache, speak, stop]) // Removed currentAudio from deps to avoid infinite loop
 
   const loadStory = async () => {
     try {
@@ -85,11 +130,55 @@ export default function StoryPage({ params }: StoryPageProps) {
     }
   }
 
+  const generateAudioForPage = async (pageIndex: number) => {
+    try {
+      setIsGeneratingAudio(true)
+      const response = await fetch(`/api/audio/generate/${story.id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pageIndex })
+      })
+
+      if (response.ok) {
+        const { audioUrl } = await response.json()
+        setAudioCache(prev => ({ ...prev, [pageIndex]: audioUrl }))
+        
+        // Play the audio if we're on this page and not muted
+        if (pageIndex === currentPage && !isMuted) {
+          // Stop any existing audio
+          if (currentAudio) {
+            currentAudio.pause()
+            currentAudio.currentTime = 0
+          }
+          
+          const audio = new Audio(audioUrl)
+          setCurrentAudio(audio)
+          audio.play().catch(err => console.log('Audio autoplay failed:', err))
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate audio:', error)
+    } finally {
+      setIsGeneratingAudio(false)
+    }
+  }
+
+  const prefetchAudioForPage = async (pageIndex: number) => {
+    try {
+      await fetch(`/api/audio/generate/${story.id}?nextPage=${pageIndex}`)
+    } catch (error) {
+      console.error('Failed to pre-fetch audio:', error)
+    }
+  }
+
   const nextPage = () => {
     if (currentPage < story.pages.length - 1) {
       // Stop current audio before changing page
       if (isBrowserTTS && isTTSSupported) {
         stop()
+      } else if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
       }
       setCurrentPage(currentPage + 1)
       // Celebrate reaching the last page
@@ -105,6 +194,9 @@ export default function StoryPage({ params }: StoryPageProps) {
       // Stop current audio before changing page
       if (isBrowserTTS && isTTSSupported) {
         stop()
+      } else if (currentAudio) {
+        currentAudio.pause()
+        currentAudio.currentTime = 0
       }
       setCurrentPage(currentPage - 1)
     }
@@ -122,15 +214,27 @@ export default function StoryPage({ params }: StoryPageProps) {
         setTimeout(() => {
           speak(story.pages[currentPage].content)
         }, 10)
-      } else if (audioElements[currentPage]) {
-        audioElements[currentPage].play().catch((err) => console.error('Audio play error:', err))
+      } else if (audioCache[currentPage]) {
+        // Stop any existing audio first
+        if (currentAudio) {
+          currentAudio.pause()
+          currentAudio.currentTime = 0
+        }
+        
+        const audio = new Audio(audioCache[currentPage])
+        setCurrentAudio(audio)
+        audio.play().catch((err) => console.error('Audio play error:', err))
       }
     } else {
       // Muted - stop playing
       if (isBrowserTTS && isTTSSupported) {
         stop()
       } else {
-        audioElements.forEach(audio => audio.pause())
+        // Stop any playing audio
+        if (currentAudio) {
+          currentAudio.pause()
+          currentAudio.currentTime = 0
+        }
       }
     }
   }
@@ -252,7 +356,24 @@ export default function StoryPage({ params }: StoryPageProps) {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.95 }}
           >
-            {isMuted ? (
+            {isGeneratingAudio && !isMuted ? (
+              <>
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                  className="h-6 w-6"
+                >
+                  <div className="h-full w-full rounded-full border-2 border-white border-t-transparent" />
+                </motion.div>
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-black/70 px-2 py-1 text-xs text-white"
+                >
+                  Generating audio...
+                </motion.div>
+              </>
+            ) : isMuted ? (
               <>
                 <VolumeX className="h-6 w-6 text-white" />
                 <motion.div
